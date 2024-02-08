@@ -9,6 +9,8 @@ import com.sky.vo.SetmealVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 @Mapper
 public interface SetmealMapper {
     @Select("select count(id) from setmeal where category_id = #{categoryId}")
@@ -21,4 +23,8 @@ public interface SetmealMapper {
 
     @AutoFill(value = OperationType.UPDATE)
     void update(Setmeal setmeal);
+
+    List<Integer> getSetmealsByIds(List<Long> ids);
+
+    void deleteBatch(List<Long> ids);
 }
