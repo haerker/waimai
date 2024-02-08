@@ -27,4 +27,7 @@ public interface SetmealMapper {
     List<Integer> getSetmealsByIds(List<Long> ids);
 
     void deleteBatch(List<Long> ids);
+
+    @Select("select * from setmeal where id = #{id}")
+    Setmeal getById(Long id);
 }

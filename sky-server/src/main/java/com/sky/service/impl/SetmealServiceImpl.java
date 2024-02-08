@@ -40,40 +40,40 @@ public class SetmealServiceImpl implements SetmealService {
     @Transactional
     public void saveWithDish(SetmealDTO setmealDTO) {
         Setmeal setmeal = new Setmeal();
-        BeanUtils.copyProperties(setmealDTO,setmeal);
+        BeanUtils.copyProperties(setmealDTO, setmeal);
 
         setmealMapper.insert(setmeal);
 
         Long setmealId = setmeal.getId();
 
         List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
-       if (setmealDishes != null && !setmealDishes.isEmpty()){
-           setmealDishes.forEach(setmealDish -> {
-               setmealDish.setSetmealId(setmealId);
-           });
-           setmealDishMapper.insertBatch(setmealDishes);
-       }
+        if (setmealDishes != null && !setmealDishes.isEmpty()) {
+            setmealDishes.forEach(setmealDish -> {
+                setmealDish.setSetmealId(setmealId);
+            });
+            setmealDishMapper.insertBatch(setmealDishes);
+        }
 
     }
 
     @Override
     public PageResult pageQuery(SetmealPageQueryDTO setmealPageQueryDTO) {
-        PageHelper.startPage(setmealPageQueryDTO.getPage(),setmealPageQueryDTO.getPageSize());
+        PageHelper.startPage(setmealPageQueryDTO.getPage(), setmealPageQueryDTO.getPageSize());
         Page<SetmealVO> page = setmealMapper.pageQuery(setmealPageQueryDTO);
-        return new PageResult(page.getTotal(),page.getResult());
+        return new PageResult(page.getTotal(), page.getResult());
     }
 
     @Override
     public void startOrStop(Integer status, Long id) {
-        if(status.equals(StatusConstant.ENABLE)){
-           List<Dish> dishes = dishMapper.getBySetmealId(id);
-           if(dishes != null && !dishes.isEmpty()){
-               dishes.forEach(dish -> {
-                   if(dish.getStatus().equals(StatusConstant.DISABLE)){
-                       throw new SetmealEnableFailedException(MessageConstant.SETMEAL_ENABLE_FAILED);
-                   }
-               });
-           }
+        if (status.equals(StatusConstant.ENABLE)) {
+            List<Dish> dishes = dishMapper.getBySetmealId(id);
+            if (dishes != null && !dishes.isEmpty()) {
+                dishes.forEach(dish -> {
+                    if (dish.getStatus().equals(StatusConstant.DISABLE)) {
+                        throw new SetmealEnableFailedException(MessageConstant.SETMEAL_ENABLE_FAILED);
+                    }
+                });
+            }
         }
         Setmeal setmeal = Setmeal.builder()
                 .status(status)
@@ -87,11 +87,39 @@ public class SetmealServiceImpl implements SetmealService {
     public void deleteBatch(List<Long> ids) {
         List<Integer> setmeals = setmealMapper.getSetmealsByIds(ids);
         setmeals.forEach(setmeal -> {
-            if(setmeal.equals(StatusConstant.ENABLE)){
+            if (setmeal.equals(StatusConstant.ENABLE)) {
                 throw new DeletionNotAllowedException(MessageConstant.SETMEAL_ON_SALE);
             }
         });
         setmealMapper.deleteBatch(ids);
         setmealDishMapper.deleteBatch(ids);
+    }
+
+    @Override
+    public SetmealVO getByIdWithDish(Long id) {
+        SetmealVO setmealVO = new SetmealVO();
+
+        Setmeal setmeal = setmealMapper.getById(id);
+        List<SetmealDish> setmealDishs = setmealDishMapper.getSetmealIdBySetmealIds(id);
+
+        BeanUtils.copyProperties(setmeal, setmealVO);
+        setmealVO.setSetmealDishes(setmealDishs);
+
+        return setmealVO;
+    }
+
+    @Override
+    @Transactional
+    public void updateWithDish(SetmealDTO setmealDTO) {
+        Setmeal setmeal = new Setmeal();
+        BeanUtils.copyProperties(setmealDTO, setmeal);
+        setmealMapper.update(setmeal);
+
+        setmealDishMapper.deleteById(setmealDTO.getId());
+        List<SetmealDish> setmealDishes = setmealDTO.getSetmealDishes();
+        setmealDishes.forEach(setmealDish -> {
+            setmealDish.setSetmealId(setmealDTO.getId());
+        });
+        setmealDishMapper.insertBatch(setmealDishes);
     }
 }
