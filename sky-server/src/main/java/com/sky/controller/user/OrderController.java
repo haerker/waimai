@@ -4,6 +4,7 @@ import com.sky.dto.OrdersDTO;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
+import com.sky.entity.OrderDetail;
 import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
@@ -48,5 +49,11 @@ public class OrderController {
     public Result<PageResult> page(int page, int pageSize, Integer status){
         PageResult pageResult = orderService.pageQuery(page, pageSize, status);
         return Result.success(pageResult);
+    }
+
+    @GetMapping("/orderDetail/{id}")
+    public Result<OrderVO> details(@PathVariable Long id){
+        OrderVO orderVO = orderService.detail(id);
+        return Result.success(orderVO);
     }
 }
