@@ -252,4 +252,27 @@ public class OrderServiceImpl implements OrderService {
         shoppingCartMapper.insertBatch(shoppingCartList);
     }
 
+    @Override
+    public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
+        PageHelper.startPage(ordersPageQueryDTO.getPage(),ordersPageQueryDTO.getPageSize());
+        Page<Orders> page = orderMapper.pageQuery(ordersPageQueryDTO);
+        List<OrderVO> orderVOList = page.stream().map(m ->{
+            OrderVO orderVO = new OrderVO();
+            BeanUtils.copyProperties(m,orderVO);
+            orderVO.setOrderDishes(getOrderDishesStr(orderVO));
+            return orderVO;
+        }).collect(Collectors.toList());
+
+        return new PageResult(page.getTotal(),orderVOList);
+    }
+
+    private String getOrderDishesStr(OrderVO orderVO){
+        List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orderVO.getId());
+        List<String> orderDishList = orderDetailList.stream().map(m ->{
+            String orderDish = m.getName() + "*" + m.getNumber();
+            return orderDish;
+        }).collect(Collectors.toList());
+        return String.join(" ",orderDishList);
+    }
+
 }
