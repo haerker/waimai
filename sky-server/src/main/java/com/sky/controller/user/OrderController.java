@@ -56,4 +56,18 @@ public class OrderController {
         OrderVO orderVO = orderService.detail(id);
         return Result.success(orderVO);
     }
+
+    @PutMapping("/cancel/{id}")
+    public Result<String> cancel(@PathVariable Long id){
+        orderService.userCancelById(id);
+        return Result.success();
+    }
+
+    @PostMapping("/repetition/{id}")
+    public Result<String> repetition(@PathVariable Long id){
+        orderService.repetition(id);
+        return Result.success();
+    }
+
+
 }
