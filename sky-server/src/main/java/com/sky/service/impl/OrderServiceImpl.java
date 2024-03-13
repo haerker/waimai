@@ -1,8 +1,11 @@
 package com.sky.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.github.pagehelper.Page;
+import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
+import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
 import com.sky.entity.*;
@@ -10,11 +13,13 @@ import com.sky.exception.AddressBookBusinessException;
 import com.sky.exception.OrderBusinessException;
 import com.sky.exception.ShoppingCartBusinessException;
 import com.sky.mapper.*;
+import com.sky.result.PageResult;
 import com.sky.service.OrderService;
 import com.sky.service.ShoppingCartService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
 import com.sky.vo.OrderSubmitVO;
+import com.sky.vo.OrderVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -46,7 +51,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderSubmitVO submitOrder(OrdersSubmitDTO ordersSubmitDTO) {
         AddressBook addressBook = addressBookMapper.getById(ordersSubmitDTO.getAddressBookId());
-        if(addressBook == null){
+        if (addressBook == null) {
             throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
         }
 
@@ -54,12 +59,12 @@ public class OrderServiceImpl implements OrderService {
         Long userId = BaseContext.getCurrentId();
         shoppingCart.setUserId(userId);
         List<ShoppingCart> shoppingCartList = shoppingCartMapper.list(shoppingCart);
-        if(shoppingCartList == null || shoppingCartList.isEmpty()){
+        if (shoppingCartList == null || shoppingCartList.isEmpty()) {
             throw new ShoppingCartBusinessException(MessageConstant.SHOPPING_CART_IS_NULL);
         }
 
         Orders orders = new Orders();
-        BeanUtils.copyProperties(ordersSubmitDTO,orders);
+        BeanUtils.copyProperties(ordersSubmitDTO, orders);
         orders.setOrderTime(LocalDateTime.now());
         orders.setPayStatus(Orders.UN_PAID);
         orders.setStatus(Orders.PENDING_PAYMENT);
@@ -139,8 +144,8 @@ public class OrderServiceImpl implements OrderService {
 //    );
 //
 //    if (jsonObject.getString("code") != null && jsonObject.getString("code").equals("ORDERPAID")) {
-//  throw new OrderBusinessException("该订单已支付");
-//    }
+        //  throw new OrderBusinessException("该订单已支付");
+        //    }
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("code", "ORDERPAID");
 //
@@ -157,6 +162,7 @@ public class OrderServiceImpl implements OrderService {
         return vo;
 
     }
+
     /**
      * 支付成功，修改订单状态
      *
@@ -177,5 +183,29 @@ public class OrderServiceImpl implements OrderService {
 
         orderMapper.update(orders);
     }
+
+    @Override
+    public PageResult pageQuery(int pageNum, int pageSize, Integer status) {
+        PageHelper.startPage(pageNum, pageSize);
+        OrdersPageQueryDTO ordersPageQueryDTO = new OrdersPageQueryDTO();
+        ordersPageQueryDTO.setUserId(BaseContext.getCurrentId());
+        ordersPageQueryDTO.setStatus(status);
+
+        Page<Orders> page = orderMapper.pageQuery(ordersPageQueryDTO);
+        List<OrderVO> list = new ArrayList<>();
+
+        if (page != null && page.getTotal() > 0) {
+            page.forEach(order -> {
+                OrderVO orderVO = new OrderVO();
+                Long orderId = order.getId();
+                BeanUtils.copyProperties(order,orderVO);
+                List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orderId);
+                orderVO.setOrderDetailList(orderDetailList);
+                list.add(orderVO);
+            });
+        }
+        return new PageResult(page.getTotal(),list);
+    }
+
 
 }

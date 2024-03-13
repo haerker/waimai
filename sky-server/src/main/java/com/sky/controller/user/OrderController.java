@@ -1,8 +1,10 @@
 package com.sky.controller.user;
 
 import com.sky.dto.OrdersDTO;
+import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
+import com.sky.result.PageResult;
 import com.sky.result.Result;
 import com.sky.service.OrderService;
 import com.sky.vo.OrderPaymentVO;
@@ -40,5 +42,11 @@ public class OrderController {
     public Result<OrderPaymentVO> payment(@RequestBody OrdersPaymentDTO ordersPaymentDTO) throws Exception {
         OrderPaymentVO orderPaymentVO = orderService.payment(ordersPaymentDTO);
         return Result.success(orderPaymentVO);
+    }
+
+    @GetMapping("/historyOrders")
+    public Result<PageResult> page(int page, int pageSize, Integer status){
+        PageResult pageResult = orderService.pageQuery(page, pageSize, status);
+        return Result.success(pageResult);
     }
 }
