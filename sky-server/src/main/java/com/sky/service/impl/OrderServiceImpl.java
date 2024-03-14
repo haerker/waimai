@@ -18,6 +18,7 @@ import com.sky.service.OrderService;
 import com.sky.service.ShoppingCartService;
 import com.sky.utils.WeChatPayUtil;
 import com.sky.vo.OrderPaymentVO;
+import com.sky.vo.OrderStatisticsVO;
 import com.sky.vo.OrderSubmitVO;
 import com.sky.vo.OrderVO;
 import org.springframework.beans.BeanUtils;
@@ -268,11 +269,29 @@ public class OrderServiceImpl implements OrderService {
 
     private String getOrderDishesStr(OrderVO orderVO){
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orderVO.getId());
-        List<String> orderDishList = orderDetailList.stream().map(m ->{
-            String orderDish = m.getName() + "*" + m.getNumber();
-            return orderDish;
-        }).collect(Collectors.toList());
+        List<String> orderDishList = orderDetailList.stream().map(m ->
+                m.getName() + "*" + m.getNumber()).collect(Collectors.toList());
         return String.join(" ",orderDishList);
+    }
+
+    @Override
+    public OrderStatisticsVO statistics() {
+        int toBeConfirmed = 0;
+        int confirmed = 0;
+        int deliveryInProgress = 0;
+        List<Integer> status = orderMapper.countStatus();
+        for(Integer s : status){
+            if(s.equals(Orders.TO_BE_CONFIRMED)){
+                toBeConfirmed++;
+            }else if(s.equals(Orders.CONFIRMED)){
+                confirmed++;
+            }else deliveryInProgress++;
+        }
+        OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
+        orderStatisticsVO.setToBeConfirmed(toBeConfirmed);
+        orderStatisticsVO.setConfirmed(confirmed);
+        orderStatisticsVO.setDeliveryInProgress(deliveryInProgress);
+        return orderStatisticsVO;
     }
 
 }

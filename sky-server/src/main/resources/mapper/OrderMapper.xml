@@ -69,4 +69,8 @@
         </where>
         order by order_time desc
     </select>
+
+    <select id="countStatus" resultType="java.lang.Integer">
+        select status from orders where status in (2,3,4)
+    </select>
 </mapper>

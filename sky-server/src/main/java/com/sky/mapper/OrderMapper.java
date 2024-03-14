@@ -8,6 +8,7 @@ import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Mapper
 public interface OrderMapper {
@@ -38,4 +39,6 @@ public interface OrderMapper {
 
     @Select("select * from order_detail where id = #{id}")
     Orders getById(Long id);
+
+    List<Integer> countStatus();
 }
