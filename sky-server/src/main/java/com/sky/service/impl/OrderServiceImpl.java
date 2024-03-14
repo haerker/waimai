@@ -322,7 +322,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void cancel(OrdersCancelDTO ordersCancelDTO) {
         Orders ordersDB = orderMapper.getById(ordersCancelDTO.getId());
-        if(ordersDB.getPayStatus().equals(Orders.PAID)){
+        if (ordersDB.getPayStatus().equals(Orders.PAID)) {
             log.info("退款");
         }
         Orders orders = Orders.builder()
@@ -334,4 +334,29 @@ public class OrderServiceImpl implements OrderService {
         orderMapper.update(orders);
     }
 
+    @Override
+    public void delivery(Long id) {
+        Orders ordersDB = orderMapper.getById(id);
+        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.CONFIRMED)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        Orders orders = Orders.builder()
+                .id(ordersDB.getId())
+                .status(Orders.DELIVERY_IN_PROGRESS)
+                .build();
+        orderMapper.update(orders);
+    }
+
+    @Override
+    public void complete(Long id) {
+        Orders ordersDB = orderMapper.getById(id);
+        if (ordersDB == null || !ordersDB.getStatus().equals(Orders.DELIVERY_IN_PROGRESS)) {
+            throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
+        }
+        Orders orders = new Orders();
+        orders.setId(ordersDB.getId());
+        orders.setStatus(Orders.COMPLETED);
+        orders.setDeliveryTime(LocalDateTime.now());
+        orderMapper.update(orders);
+    }
 }

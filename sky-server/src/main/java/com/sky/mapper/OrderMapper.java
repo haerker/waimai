@@ -40,5 +40,6 @@ public interface OrderMapper {
     @Select("select * from orders where id = #{id}")
     Orders getById(Long id);
 
+    @Select("select status from orders where status in (2,3,4)")
     List<Integer> countStatus();
 }
