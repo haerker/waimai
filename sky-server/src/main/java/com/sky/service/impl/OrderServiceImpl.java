@@ -5,6 +5,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.sky.constant.MessageConstant;
 import com.sky.context.BaseContext;
+import com.sky.dto.OrdersConfirmDTO;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.dto.OrdersPaymentDTO;
 import com.sky.dto.OrdersSubmitDTO;
@@ -200,13 +201,13 @@ public class OrderServiceImpl implements OrderService {
             page.forEach(order -> {
                 OrderVO orderVO = new OrderVO();
                 Long orderId = order.getId();
-                BeanUtils.copyProperties(order,orderVO);
+                BeanUtils.copyProperties(order, orderVO);
                 List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orderId);
                 orderVO.setOrderDetailList(orderDetailList);
                 list.add(orderVO);
             });
         }
-        return new PageResult(page.getTotal(),list);
+        return new PageResult(page.getTotal(), list);
     }
 
     @Override
@@ -214,7 +215,7 @@ public class OrderServiceImpl implements OrderService {
         OrderVO orderVO = new OrderVO();
         Orders orders = orderMapper.getById(id);
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
-        BeanUtils.copyProperties(orders,orderVO);
+        BeanUtils.copyProperties(orders, orderVO);
         orderVO.setOrderDetailList(orderDetailList);
         return orderVO;
     }
@@ -225,12 +226,12 @@ public class OrderServiceImpl implements OrderService {
         if (ordersDB == null) {
             throw new OrderBusinessException(MessageConstant.ORDER_NOT_FOUND);
         }
-        if(ordersDB.getStatus() > 2){
+        if (ordersDB.getStatus() > 2) {
             throw new OrderBusinessException(MessageConstant.ORDER_STATUS_ERROR);
         }
         Orders orders = new Orders();
         orders.setId(ordersDB.getId());
-        if(ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED)){
+        if (ordersDB.getStatus().equals(Orders.TO_BE_CONFIRMED)) {
             orders.setPayStatus(Orders.REFUND);
         }
         orders.setStatus(Orders.CANCELLED);
@@ -242,9 +243,9 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public void repetition(Long id) {
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(id);
-        List<ShoppingCart> shoppingCartList = orderDetailList.stream().map(or ->{
+        List<ShoppingCart> shoppingCartList = orderDetailList.stream().map(or -> {
             ShoppingCart shoppingCart = new ShoppingCart();
-            BeanUtils.copyProperties(or,shoppingCart,"id");
+            BeanUtils.copyProperties(or, shoppingCart, "id");
             shoppingCart.setUserId(BaseContext.getCurrentId());
             shoppingCart.setCreateTime(LocalDateTime.now());
             return shoppingCart;
@@ -255,23 +256,23 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public PageResult conditionSearch(OrdersPageQueryDTO ordersPageQueryDTO) {
-        PageHelper.startPage(ordersPageQueryDTO.getPage(),ordersPageQueryDTO.getPageSize());
+        PageHelper.startPage(ordersPageQueryDTO.getPage(), ordersPageQueryDTO.getPageSize());
         Page<Orders> page = orderMapper.pageQuery(ordersPageQueryDTO);
-        List<OrderVO> orderVOList = page.stream().map(m ->{
+        List<OrderVO> orderVOList = page.stream().map(m -> {
             OrderVO orderVO = new OrderVO();
-            BeanUtils.copyProperties(m,orderVO);
+            BeanUtils.copyProperties(m, orderVO);
             orderVO.setOrderDishes(getOrderDishesStr(orderVO));
             return orderVO;
         }).collect(Collectors.toList());
 
-        return new PageResult(page.getTotal(),orderVOList);
+        return new PageResult(page.getTotal(), orderVOList);
     }
 
-    private String getOrderDishesStr(OrderVO orderVO){
+    private String getOrderDishesStr(OrderVO orderVO) {
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orderVO.getId());
         List<String> orderDishList = orderDetailList.stream().map(m ->
                 m.getName() + "*" + m.getNumber()).collect(Collectors.toList());
-        return String.join(" ",orderDishList);
+        return String.join(" ", orderDishList);
     }
 
     @Override
@@ -280,18 +281,27 @@ public class OrderServiceImpl implements OrderService {
         int confirmed = 0;
         int deliveryInProgress = 0;
         List<Integer> status = orderMapper.countStatus();
-        for(Integer s : status){
-            if(s.equals(Orders.TO_BE_CONFIRMED)){
+        for (Integer s : status) {
+            if (s.equals(Orders.TO_BE_CONFIRMED)) {
                 toBeConfirmed++;
-            }else if(s.equals(Orders.CONFIRMED)){
+            } else if (s.equals(Orders.CONFIRMED)) {
                 confirmed++;
-            }else deliveryInProgress++;
+            } else deliveryInProgress++;
         }
         OrderStatisticsVO orderStatisticsVO = new OrderStatisticsVO();
         orderStatisticsVO.setToBeConfirmed(toBeConfirmed);
         orderStatisticsVO.setConfirmed(confirmed);
         orderStatisticsVO.setDeliveryInProgress(deliveryInProgress);
         return orderStatisticsVO;
+    }
+
+    @Override
+    public void confirm(OrdersConfirmDTO ordersConfirmDTO) {
+        Orders orders = Orders.builder()
+                .id(ordersConfirmDTO.getId())
+                .status(Orders.CONFIRMED)
+                .build();
+        orderMapper.update(orders);
     }
 
 }
