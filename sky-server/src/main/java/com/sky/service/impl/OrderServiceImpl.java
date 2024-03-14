@@ -217,6 +217,9 @@ public class OrderServiceImpl implements OrderService {
         List<OrderDetail> orderDetailList = orderDetailMapper.getByOrderId(orders.getId());
         BeanUtils.copyProperties(orders, orderVO);
         orderVO.setOrderDetailList(orderDetailList);
+        AddressBook addressBook = addressBookMapper.getById(orders.getAddressBookId());
+        String address = addressBook.getProvinceName() + addressBook.getCityName() + addressBook.getDistrictName();
+        orderVO.setAddress(address);
         return orderVO;
     }
 
@@ -262,6 +265,9 @@ public class OrderServiceImpl implements OrderService {
             OrderVO orderVO = new OrderVO();
             BeanUtils.copyProperties(m, orderVO);
             orderVO.setOrderDishes(getOrderDishesStr(orderVO));
+            AddressBook addressBook = addressBookMapper.getById(m.getAddressBookId());
+            String address = addressBook.getProvinceName() + addressBook.getCityName() + addressBook.getDistrictName();
+            orderVO.setAddress(address);
             return orderVO;
         }).collect(Collectors.toList());
 
