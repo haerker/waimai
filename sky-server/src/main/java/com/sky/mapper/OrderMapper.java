@@ -42,4 +42,10 @@ public interface OrderMapper {
 
     @Select("select status from orders where status in (2,3,4)")
     List<Integer> countStatus();
+
+    @Select("select * from orders where status = #{status} and  order_time < #{time} ")
+    List<Orders> getByStatusAndOrderTimeLT(Integer status, LocalDateTime time);
+
+    @Select("select * from orders where status = #{status}")
+    List<Orders> getByStatus(Integer status);
 }
