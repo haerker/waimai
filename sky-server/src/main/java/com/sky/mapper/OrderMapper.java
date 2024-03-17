@@ -6,9 +6,11 @@ import com.sky.entity.Orders;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.aspectj.weaver.ast.Or;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface OrderMapper {
@@ -48,4 +50,8 @@ public interface OrderMapper {
 
     @Select("select * from orders where status = #{status}")
     List<Orders> getByStatus(Integer status);
+
+    Double sumByMap(Map<String, Object> map);
+
+    List<Orders> getSum(Map<String, Object> map);
 }
