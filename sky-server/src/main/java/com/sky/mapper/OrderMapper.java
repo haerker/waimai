@@ -3,11 +3,13 @@ package com.sky.mapper;
 import com.github.pagehelper.Page;
 import com.sky.dto.OrdersPageQueryDTO;
 import com.sky.entity.Orders;
+import com.sky.vo.OrderStatisticsVO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.aspectj.weaver.ast.Or;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -54,4 +56,6 @@ public interface OrderMapper {
     Double sumByMap(Map<String, Object> map);
 
     List<Orders> getSum(Map<String, Object> map);
+
+    List<Orders> countByTime(LocalDateTime begin,LocalDateTime end);
 }
