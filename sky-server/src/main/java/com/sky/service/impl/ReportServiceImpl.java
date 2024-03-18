@@ -5,10 +5,7 @@ import com.sky.entity.User;
 import com.sky.mapper.OrderMapper;
 import com.sky.mapper.UserMapper;
 import com.sky.service.ReportService;
-import com.sky.vo.OrderReportVO;
-import com.sky.vo.OrderStatisticsVO;
-import com.sky.vo.TurnoverReportVO;
-import com.sky.vo.UserReportVO;
+import com.sky.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.asm.Advice;
 import org.apache.commons.lang3.StringUtils;
@@ -167,5 +164,11 @@ public class ReportServiceImpl implements ReportService {
                 .validOrderCount(vaildOrderCountTotal)
                 .orderCompletionRate(orderCompletionRate)
                 .build();
+    }
+
+    @Override
+    public SalesTop10ReportVO getSalesTop10(LocalDate begin, LocalDate end) {
+        
+        return null;
     }
 }

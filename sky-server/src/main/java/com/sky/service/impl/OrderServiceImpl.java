@@ -88,7 +88,7 @@ public class OrderServiceImpl implements OrderService {
         shoppingCartList.forEach(shoppingCart1 -> {
             OrderDetail orderDetail = new OrderDetail();
             BeanUtils.copyProperties(shoppingCart1, orderDetail);
-            orderDetail.setOrderId(orders.getId());
+            orderDetail.setOrderId(orderId);
             orderDetailList.add(orderDetail);
         });
         orderDetailMapper.insertBatch(orderDetailList);
