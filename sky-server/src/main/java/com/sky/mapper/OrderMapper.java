@@ -61,4 +61,6 @@ public interface OrderMapper {
     List<Orders> countByTime(LocalDateTime begin,LocalDateTime end);
 
     List<GoodsSalesDTO> getSalesTop(LocalDateTime begin, LocalDateTime end);
+
+    Integer countByMap(Map map);
 }

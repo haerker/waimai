@@ -20,4 +20,6 @@ public interface UserMapper {
     User getById(Long userId);
 
     List<User> countByTime(Map<String,Object> map);
+
+    Integer countByMap(Map map);
 }
