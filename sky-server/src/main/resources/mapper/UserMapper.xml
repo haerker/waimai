@@ -22,7 +22,7 @@
     </select>
 
     <select id="countByMap" resultType="java.lang.Integer">
-        select sum(id) from user
+        select count(id) from user
         <where>
             <if test="begin != null">
                 and create_time &gt; #{begin}
